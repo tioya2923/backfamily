@@ -33,16 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Fechar a declaração preparada
                 $stmt->close();
             } else {
-                echo "Ocorreu um erro ao mover a foto.";
+                echo "Ocorreu um erro ao mover a foto. " . mysqli_error($conn);
+                
             }
         } else {
-            echo "O arquivo não é uma imagem válida.";
+            echo "O arquivo não é uma imagem válida." . mysqli_error($conn);
         }
     } else {
-        echo "Nenhuma fotografia selecionada ou erro no arquivo.";
+        echo "Nenhuma fotografia selecionada ou erro no arquivo." . mysqli_error($conn);
     }
 } else {
-    echo "Método de solicitação inválido.";
+    echo "Método de solicitação inválido." . mysqli_error($conn);
 }
 
 // Fechar a conexão
