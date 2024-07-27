@@ -1,20 +1,49 @@
 <?php
 require_once '../connect/server.php';
 require_once '../connect/cors.php';
-$nome = mysqli_real_escape_string($conn, $_POST['nome']);
-$descricao = mysqli_real_escape_string($conn, $_POST['descricao']);
-if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-  $image = $_FILES['image'];
-  $filename = mysqli_real_escape_string($conn, $image['name']);
-  $target_dir = "uploadsFotos/";
-  if (move_uploaded_file($image['tmp_name'], $target_dir . $filename)) {
-    $sql = "INSERT INTO fotos (nome, foto, descricao) VALUES ('$nome', '$filename', '$descricao')";
-    $result = mysqli_query($conn, $sql);
-    echo "Foto enviada com sucesso!";
-  } else {
-    echo "Ocorreu um erro ao enviar a foto.";
-  }
+
+// Certifique-se de que o método de solicitação é POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Escapar entradas para prevenir SQL Injection
+    $nome = mysqli_real_escape_string($conn, $_POST['nome']);
+    $descricao = mysqli_real_escape_string($conn, $_POST['descricao']);
+
+    // Verificar se o arquivo foi enviado sem erros
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+        $image = $_FILES['image'];
+        $filename = mysqli_real_escape_string($conn, $image['name']);
+        $target_dir = "uploadsFotos/";
+
+        // Verificar se o arquivo é uma imagem
+        if (getimagesize($image['tmp_name']) !== false) {
+            // Mover o arquivo enviado para o diretório de destino
+            if (move_uploaded_file($image['tmp_name'], $target_dir . $filename)) {
+                // Preparar a consulta SQL para evitar SQL Injection
+                $stmt = $conn->prepare("INSERT INTO fotos (nome, foto, descricao) VALUES (?, ?, ?)");
+                $stmt->bind_param("sss", $nome, $filename, $descricao);
+
+                // Executar a consulta e verificar se foi bem-sucedida
+                if ($stmt->execute()) {
+                    echo "Foto enviada com sucesso!";
+                } else {
+                    echo "Ocorreu um erro ao enviar a foto.";
+                }
+
+                // Fechar a declaração preparada
+                $stmt->close();
+            } else {
+                echo "Ocorreu um erro ao mover a foto.";
+            }
+        } else {
+            echo "O arquivo não é uma imagem válida.";
+        }
+    } else {
+        echo "Nenhuma fotografia selecionada ou erro no arquivo.";
+    }
 } else {
-  echo "Nenhuma fotografia selecionada.";
+    echo "Método de solicitação inválido.";
 }
+
+// Fechar a conexão
+$conn->close();
 ?>
