@@ -26,7 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($stmt->execute()) {
                     echo "Foto enviada com sucesso!";
                 } else {
-                    echo "Ocorreu um erro ao enviar a foto.";
+                    // Alteração aqui para mostrar o erro do MySQL
+                    echo "Erro ao enviar a foto: " . mysqli_error($conn);
                 }
 
                 // Fechar a declaração preparada
