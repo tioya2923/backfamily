@@ -9,10 +9,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
         $image = $_FILES['image'];
         $filename = mysqli_real_escape_string($conn, $image['name']);
-        $target_dir = __DIR__ . '/../uploadsFotos/';
+        // Usando o diretório temporário do Heroku
+        $target_dir = '/tmp/';
 
         if (getimagesize($image['tmp_name']) !== false) {
             if (move_uploaded_file($image['tmp_name'], $target_dir . $filename)) {
+                // Aqui você deveria adicionar o código para enviar a imagem para um serviço de armazenamento em nuvem
+                // e salvar o URL retornado no banco de dados
+
                 $stmt = $conn->prepare("INSERT INTO fotos (nome, foto, descricao) VALUES (?, ?, ?)");
                 $stmt->bind_param("sss", $nome, $filename, $descricao);
 

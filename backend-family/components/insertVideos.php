@@ -9,7 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['video']) && $_FILES['video']['error'] == 0) {
         $video = $_FILES['video'];
         $filename = mysqli_real_escape_string($conn, $video['name']);
-        $target_dir = __DIR__ . '/../uploadsVideos/';
+        // Usando o diretório temporário do Heroku
+        $target_dir = '/tmp/';
         $max_size = 1024 * 1024 * 1024;
         $allowed_exts = array('mp4', 'mov', 'avi', 'mkv', 'webm');
         $size = filesize($video['tmp_name']);
@@ -17,6 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($size <= $max_size && in_array($ext, $allowed_exts)) {
             if (move_uploaded_file($video['tmp_name'], $target_dir . $filename)) {
+                // Aqui você deveria adicionar o código para enviar o vídeo para um serviço de armazenamento em nuvem
+                // e salvar o URL retornado no banco de dados
+
                 $stmt = $conn->prepare("INSERT INTO videos (nome, video, descricao) VALUES (?, ?, ?)");
                 $stmt->bind_param('sss', $nome, $filename, $descricao);
 
