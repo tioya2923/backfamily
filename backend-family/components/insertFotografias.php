@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
         $image = $_FILES['image'];
         $filename = mysqli_real_escape_string($conn, $image['name']);
-        $target_dir = "uploadsFotos/";
+        $target_dir = $_SERVER['DOCUMENT_ROOT'] . "/uploadsFotos/";
 
         // Verificar se o arquivo é uma imagem
         if (getimagesize($image['tmp_name']) !== false) {
@@ -26,24 +26,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($stmt->execute()) {
                     echo "Foto enviada com sucesso!";
                 } else {
-                    // Alteração aqui para mostrar o erro do MySQL
-                    echo "Erro ao enviar a foto: " . mysqli_error($conn);
+                    echo "Erro ao enviar a foto: " . $stmt->error;
                 }
 
                 // Fechar a declaração preparada
                 $stmt->close();
             } else {
-                echo "Ocorreu um erro ao mover a foto. " . mysqli_error($conn);
-                
+                echo "Ocorreu um erro ao mover a foto.";
             }
         } else {
-            echo "O arquivo não é uma imagem válida." . mysqli_error($conn);
+            echo "O arquivo não é uma imagem válida.";
         }
     } else {
-        echo "Nenhuma fotografia selecionada ou erro no arquivo." . mysqli_error($conn);
+        echo "Nenhuma fotografia selecionada ou erro no arquivo.";
     }
 } else {
-    echo "Método de solicitação inválido." . mysqli_error($conn);
+    echo "Método de solicitação inválido.";
 }
 
 // Fechar a conexão

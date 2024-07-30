@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['video']) && $_FILES['video']['error'] == 0) {
         $video = $_FILES['video'];
         $filename = mysqli_real_escape_string($conn, $video['name']);
-        $target_dir = "uploadsVideos/";
+        $target_dir = $_SERVER['DOCUMENT_ROOT'] . "/uploadsVideos/";
         $max_size = 1024 * 1024 * 1024; // Tamanho máximo do arquivo
         $allowed_exts = array('mp4', 'mov', 'avi', 'mkv', 'webm'); // Extensões permitidas
         $size = filesize($video['tmp_name']);
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     echo "Vídeo enviado com sucesso!";
                 } else {
-                    echo "Ocorreu um erro ao enviar o vídeo.";
+                    echo "Ocorreu um erro ao enviar o vídeo: " . $stmt->error;
                 }
 
                 // Fechar a declaração preparada
