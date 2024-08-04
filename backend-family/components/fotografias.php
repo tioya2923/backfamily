@@ -1,55 +1,36 @@
 <?php
-/*
-require_once '../connect/server.php';
-require_once '../connect/cors.php';
-$stmt = $conn->prepare("SELECT * FROM fotos ORDER BY data_hora DESC");
-$stmt->execute();
-$result = $stmt->get_result();
-$fotos = array();
-while ($row = $result->fetch_assoc()) {
-  $fotos[] = $row;
-}
-echo json_encode($fotos);
-*/
-
-
-
-
+require '../vendor/autoload.php';
 require_once '../connect/server.php';
 require_once '../connect/cors.php';
 
-// caminho para a pasta onde as fotos estão armazenadas
-$target_dir = "uploadsFotos/";
+use Aws\S3\S3Client;
+use Aws\S3\Exception\S3Exception;
 
-// array para armazenar os nomes dos arquivos
-$files = [];
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
-// abrir o diretório e ler os arquivos
-if ($dir = opendir($target_dir)) {
-    while (($file = readdir($dir)) !== false) {
-        if ($file != "." && $file != "..") {
-            $files[] = $file;
-        }
-    }
-    closedir($dir);
-}
+$bucketName = 'familia-gouveia';
+$IAM_KEY = getenv('AWS_IAM_KEY');
+$IAM_SECRET = getenv('AWS_IAM_SECRET');
 
-// buscar informações das fotos no banco de dados
+$s3 = S3Client::factory([
+    'credentials' => [
+        'key' => $IAM_KEY,
+        'secret' => $IAM_SECRET,
+    ],
+    'version' => 'latest',
+    'region'  => 'us-east-1'
+]);
+
 $stmt = $conn->prepare("SELECT * FROM fotos ORDER BY data_hora DESC");
 $stmt->execute();
 $result = $stmt->get_result();
 $fotos = array();
 
-// combinar as informações do banco de dados com os nomes dos arquivos
 while ($row = $result->fetch_assoc()) {
-    if (in_array($row['foto'], $files)) { // verificar se o arquivo existe na pasta
-        $fotos[] = $row;
-    }
+    $row['foto'] = $s3->getObjectUrl($bucketName, $row['foto']);
+    $fotos[] = $row;
 }
 
-// enviar a lista combinada como JSON
 echo json_encode($fotos);
-
-
-
 ?>

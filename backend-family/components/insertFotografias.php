@@ -1,42 +1,57 @@
 <?php
+require '../vendor/autoload.php';
 require_once '../connect/server.php';
 require_once '../connect/cors.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = mysqli_real_escape_string($conn, $_POST['nome']);
-    $descricao = mysqli_real_escape_string($conn, $_POST['descricao']);
+use Aws\S3\S3Client;
+use Aws\S3\Exception\S3Exception;
 
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-        $image = $_FILES['image'];
-        $filename = mysqli_real_escape_string($conn, $image['name']);
-        // Usando o diretório temporário do Heroku
-        $target_dir = '/tmp/';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
-        if (getimagesize($image['tmp_name']) !== false) {
-            if (move_uploaded_file($image['tmp_name'], $target_dir . $filename)) {
-                // Aqui você deveria adicionar o código para enviar a imagem para um serviço de armazenamento em nuvem
-                // e salvar o URL retornado no banco de dados
+$bucketName = 'familia-gouveia';
+$IAM_KEY = getenv('AWS_IAM_KEY');
+$IAM_SECRET = getenv('AWS_IAM_SECRET');
 
-                $stmt = $conn->prepare("INSERT INTO fotos (nome, foto, descricao) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $nome, $filename, $descricao);
+$s3 = S3Client::factory([
+    'credentials' => [
+        'key' => $IAM_KEY,
+        'secret' => $IAM_SECRET,
+    ],
+    'version' => 'latest',
+    'region'  => 'us-east-1'
+]);
 
-                if ($stmt->execute()) {
-                    echo "Foto enviada com sucesso!";
-                } else {
-                    echo "Erro ao enviar a foto: " . $stmt->error;
-                }
-                $stmt->close();
-            } else {
-                echo "Ocorreu um erro ao mover a foto.";
-            }
+if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+    $image = $_FILES['image'];
+    $filename = mysqli_real_escape_string($conn, $image['name']);
+    $nome = isset($_POST['nome']) ? mysqli_real_escape_string($conn, $_POST['nome']) : 'Nome padrão';
+    $descricao = isset($_POST['descricao']) ? mysqli_real_escape_string($conn, $_POST['descricao']) : 'Descrição padrão';
+    
+    try {
+        $key = "uploads/{$filename}";
+        $result = $s3->putObject([
+            'Bucket' => $bucketName,
+            'Key'    => $key,
+            'SourceFile' => $image['tmp_name'],
+            'ACL'    => 'public-read',
+            'ContentType' => 'image/png'
+        ]);
+
+        $stmt = $conn->prepare("INSERT INTO fotos (nome, foto, descricao) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $nome, $key, $descricao);
+
+        if ($stmt->execute()) {
+            echo "Foto enviada com sucesso!";
         } else {
-            echo "O arquivo não é uma imagem válida.";
+            echo "Erro ao enviar a foto: " . $stmt->error;
         }
-    } else {
-        echo "Nenhuma fotografia selecionada ou erro no arquivo.";
+        $stmt->close();
+    } catch (S3Exception $e) {
+        echo "Houve um erro ao fazer upload no S3: " . $e->getMessage();
     }
 } else {
-    echo "Método de solicitação inválido.";
+    echo "Nenhuma fotografia selecionada ou erro no arquivo.";
 }
 
 $conn->close();
