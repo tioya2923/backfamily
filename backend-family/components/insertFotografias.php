@@ -10,8 +10,14 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 $bucketName = 'familia-gouveia';
+
+
 $IAM_KEY = getenv('AWS_IAM_KEY');
 $IAM_SECRET = getenv('AWS_IAM_SECRET');
+
+
+
+
 
 $s3 = S3Client::factory([
     'credentials' => [

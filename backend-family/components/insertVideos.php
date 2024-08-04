@@ -1,6 +1,33 @@
 <?php
+require '../vendor/autoload.php';
 require_once '../connect/server.php';
 require_once '../connect/cors.php';
+
+use Aws\S3\S3Client;
+use Aws\S3\Exception\S3Exception;
+
+// Carregar variáveis de ambiente do arquivo .env
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+$bucketName = 'familia-gouveia';
+
+
+
+$IAM_KEY = getenv('AWS_IAM_KEY');
+$IAM_SECRET = getenv('AWS_IAM_SECRET');
+
+
+
+// Configurar cliente S3
+$s3 = S3Client::factory([
+    'credentials' => [
+        'key' => $IAM_KEY,
+        'secret' => $IAM_SECRET,
+    ],
+    'version' => 'latest',
+    'region'  => 'us-east-1'
+]);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = mysqli_real_escape_string($conn, $_POST['nome']);
@@ -9,32 +36,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['video']) && $_FILES['video']['error'] == 0) {
         $video = $_FILES['video'];
         $filename = mysqli_real_escape_string($conn, $video['name']);
-        // Usando o diretório temporário do Heroku
-        $target_dir = '/tmp/';
-        $max_size = 1024 * 1024 * 1024;
-        $allowed_exts = array('mp4', 'mov', 'avi', 'mkv', 'webm');
-        $size = filesize($video['tmp_name']);
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        
+        try {
+            // Gerar chave única para o arquivo no S3
+            $key = "uploads/{$filename}";
+            
+            // Fazer upload do vídeo para o S3
+            $result = $s3->putObject([
+                'Bucket' => $bucketName,
+                'Key'    => $key,
+                'SourceFile' => $video['tmp_name'],
+                'ACL'    => 'public-read', // Definir permissões de leitura pública
+                'ContentType' => 'video/mp4' // Mudar conforme o tipo do vídeo
+            ]);
 
-        if ($size <= $max_size && in_array($ext, $allowed_exts)) {
-            if (move_uploaded_file($video['tmp_name'], $target_dir . $filename)) {
-                // Aqui você deveria adicionar o código para enviar o vídeo para um serviço de armazenamento em nuvem
-                // e salvar o URL retornado no banco de dados
+            // Preparar e executar a inserção no banco de dados
+            $stmt = $conn->prepare("INSERT INTO videos (nome, video, descricao) VALUES (?, ?, ?)");
+            $stmt->bind_param('sss', $nome, $key, $descricao);
 
-                $stmt = $conn->prepare("INSERT INTO videos (nome, video, descricao) VALUES (?, ?, ?)");
-                $stmt->bind_param('sss', $nome, $filename, $descricao);
-
-                if ($stmt->execute()) {
-                    echo "Vídeo enviado com sucesso!";
-                } else {
-                    echo "Ocorreu um erro ao enviar o vídeo: " . $stmt->error;
-                }
-                $stmt->close();
+            if ($stmt->execute()) {
+                echo "Vídeo enviado com sucesso!";
             } else {
-                echo "Ocorreu um erro ao mover o vídeo.";
+                echo "Ocorreu um erro ao enviar o vídeo: " . $stmt->error;
             }
-        } else {
-            echo "O arquivo de vídeo é inválido ou excede o tamanho máximo permitido.";
+            $stmt->close();
+        } catch (S3Exception $e) {
+            echo "Houve um erro ao fazer upload no S3: " . $e->getMessage();
         }
     } else {
         echo "Nenhum vídeo selecionado ou erro no arquivo.";
