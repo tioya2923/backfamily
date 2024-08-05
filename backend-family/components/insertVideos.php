@@ -12,21 +12,17 @@ $dotenv->load();
 
 $bucketName = 'familia-gouveia';
 
-
-
 $IAM_KEY = getenv('AWS_ACCESS_KEY_ID');
 $IAM_SECRET = getenv('AWS_SECRET_ACCESS_KEY');
 
-
-
 // Configurar cliente S3
-$s3 = S3Client::factory([
+$s3 = new S3Client([
+    'version' => 'latest',
+    'region'  => 'us-east-1',
     'credentials' => [
-        'key' => $IAM_KEY,
+        'key'    => $IAM_KEY,
         'secret' => $IAM_SECRET,
     ],
-    'version' => 'latest',
-    'region'  => 'us-east-1'
 ]);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
