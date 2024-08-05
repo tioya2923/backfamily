@@ -1,8 +1,5 @@
 <?php
 
-ini_set('upload_max_filesize', '512M');
-ini_set('post_max_size', '512M');
-
 
 require '../vendor/autoload.php';
 require_once '../connect/server.php';
