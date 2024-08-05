@@ -6,9 +6,6 @@ require_once '../connect/cors.php';
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 
-// Carregar variáveis de ambiente do arquivo .env
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
 
 $bucketName = 'familia-gouveia';
 $IAM_KEY = getenv('AWS_IAM_KEY');

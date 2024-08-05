@@ -6,8 +6,6 @@ require_once '../connect/cors.php';
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
 
 $bucketName = 'familia-gouveia';
 $IAM_KEY = getenv('AWS_ACCESS_KEY_ID');
