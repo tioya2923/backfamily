@@ -20,6 +20,6 @@ if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $origens
     }
 }
 
-header('Content-Type: application/json');
+//header('Content-Type: application/json');
 
 ?>
