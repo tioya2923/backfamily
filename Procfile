@@ -1,1 +1,1 @@
-web: vendor/bin/heroku-php-apache2 backend-family/
+web: vendor/bin/heroku-php-apache2 -i backend-family/components/custom_php.ini backend-family/
