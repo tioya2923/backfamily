@@ -10,7 +10,7 @@ use Aws\S3\Exception\S3Exception;
 $bucketName = 'familia-gouveia';
 
 
-$IAM_KEY = getenv('AWS_IAM_KEY');
+$IAM_KEY = getenv('AWS_ACCESS_KEY_ID');
 $IAM_SECRET = getenv('AWS_IAM_SECRET');
 
 
