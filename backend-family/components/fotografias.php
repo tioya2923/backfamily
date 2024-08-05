@@ -6,7 +6,6 @@ require_once '../connect/cors.php';
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 
-
 $bucketName = 'familia-gouveia';
 $IAM_KEY = getenv('AWS_ACCESS_KEY_ID');
 $IAM_SECRET = getenv('AWS_SECRET_ACCESS_KEY');
@@ -30,8 +29,6 @@ while ($row = $result->fetch_assoc()) {
     $fotos[] = $row;
 }
 
-echo json_encode($fotos);
-
 if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
     $image = $_FILES['image'];
     $filename = mysqli_real_escape_string($conn, $image['name']);
@@ -52,17 +49,19 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
         $stmt->bind_param("sss", $nome, $key, $descricao);
 
         if ($stmt->execute()) {
-            echo "Foto enviada com sucesso!";
+            $fotos[] = ["message" => "Foto enviada com sucesso!"];
         } else {
-            echo "Erro ao enviar a foto: " . $stmt->error;
+            $fotos[] = ["error" => "Erro ao enviar a foto: " . $stmt->error];
         }
         $stmt->close();
     } catch (S3Exception $e) {
-        echo "Houve um erro ao fazer upload no S3: " . $e->getMessage();
+        $fotos[] = ["error" => "Houve um erro ao fazer upload no S3: " . $e->getMessage()];
     }
 } else {
-    echo "Nenhuma fotografia selecionada ou erro no arquivo.";
+    $fotos[] = ["error" => "Nenhuma fotografia selecionada ou erro no arquivo."];
 }
+
+echo json_encode($fotos);
 
 $conn->close();
 ?>
