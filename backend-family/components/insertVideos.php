@@ -6,7 +6,6 @@ require_once '../connect/cors.php';
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 
-
 $bucketName = 'familia-gouveia';
 $IAM_KEY = getenv('AWS_ACCESS_KEY_ID');
 $IAM_SECRET = getenv('AWS_SECRET_ACCESS_KEY');
@@ -51,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Houve um erro ao fazer upload no S3: " . $e->getMessage();
         }
     } else {
-        echo "Nenhum vídeo selecionado ou erro no arquivo.";
+        echo "Erro no upload: " . $_FILES['video']['error'];
     }
 } else {
     echo "Método de solicitação inválido.";
