@@ -1,9 +1,9 @@
 <?php
 
 $origensPermitidas = [
-    'http://localhost:3000',
-    'https://frontend-family-b1523b1674d4.herokuapp.com',
-    'https://familiagouveia.pt'
+    'http://localhost:3000/backend-family',
+    'https://frontend-family-b1523b1674d4.herokuapp.com/backend-family',
+    'https://familiagouveia.pt/backend-family'
    
  
     ];
@@ -20,6 +20,6 @@ if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $origens
     }
 }
 
-//header('Content-Type: application/json');
+header('Content-Type: application/json');
 
 ?>
