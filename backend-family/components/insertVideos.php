@@ -6,16 +6,13 @@ require_once '../connect/cors.php';
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 
-// Carregar variáveis de ambiente do arquivo .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 $bucketName = 'familia-gouveia';
-
 $IAM_KEY = getenv('AWS_ACCESS_KEY_ID');
 $IAM_SECRET = getenv('AWS_SECRET_ACCESS_KEY');
 
-// Configurar cliente S3
 $s3 = new S3Client([
     'version' => 'latest',
     'region'  => 'us-east-1',
@@ -34,19 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $filename = mysqli_real_escape_string($conn, $video['name']);
         
         try {
-            // Gerar chave única para o arquivo no S3
             $key = "uploads/{$filename}";
-            
-            // Fazer upload do vídeo para o S3
             $result = $s3->putObject([
                 'Bucket' => $bucketName,
                 'Key'    => $key,
                 'SourceFile' => $video['tmp_name'],
-                'ACL'    => 'public-read', // Definir permissões de leitura pública
-                'ContentType' => 'video/mp4' // Mudar conforme o tipo do vídeo
+                'ACL'    => 'public-read',
+                'ContentType' => 'video/mp4'
             ]);
 
-            // Preparar e executar a inserção no banco de dados
             $stmt = $conn->prepare("INSERT INTO videos (nome, video, descricao) VALUES (?, ?, ?)");
             $stmt->bind_param('sss', $nome, $key, $descricao);
 
