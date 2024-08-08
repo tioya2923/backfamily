@@ -1,7 +1,23 @@
 <?php
-// Incluir o ficheiro de conexão
+require '../vendor/autoload.php';
 require_once '../connect/server.php';
 require_once '../connect/cors.php';
+
+use Aws\S3\S3Client;
+use Aws\S3\Exception\S3Exception;
+
+$bucketName = 'familia-gouveia';
+$IAM_KEY = getenv('AWS_ACCESS_KEY_ID');
+$IAM_SECRET = getenv('AWS_SECRET_ACCESS_KEY');
+
+$s3 = new S3Client([
+    'version' => 'latest',
+    'region'  => 'us-east-1',
+    'credentials' => [
+        'key'    => $IAM_KEY,
+        'secret' => $IAM_SECRET,
+    ],
+]);
 
 // Verifica se o ID da foto foi fornecido
 if (isset($_GET['id'])) {
@@ -27,36 +43,5 @@ if (isset($_GET['id'])) {
   echo json_encode(['status' => 'error', 'message' => 'ID da foto não fornecido.']);
 }
 
-
-// Verifica se o ID da foto foi fornecido
-if (isset($_GET['id'])) {
-  // Sanitiza o ID da foto
-  $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
-
-  // Verifica se os dados da foto foram fornecidos
-  if (isset($_POST['foto'])) {
-    // Sanitiza os dados da foto
-    $foto = filter_input(INPUT_POST, 'foto', FILTER_SANITIZE_STRING);
-
-    // Consulta para editar a foto
-    $sql = "UPDATE fotos SET foto = ? WHERE id = ?";
-
-    // Prepara a declaração
-    $stmt = $conn->prepare($sql);
-
-    // Liga o parâmetro
-    $stmt->bind_param("si", $foto, $id);
-
-    // Executa a declaração
-    if ($stmt->execute()) {
-      echo json_encode(['status' => 'success', 'message' => 'Foto editada com sucesso.']);
-    } else {
-      echo json_encode(['status' => 'error', 'message' => 'Erro ao editar a foto.']);
-    }
-  } else {
-    echo json_encode(['status' => 'error', 'message' => 'Dados da foto não fornecidos.']);
-  }
-} else {
-  echo json_encode(['status' => 'error', 'message' => 'ID da foto não fornecido.']);
-}
+$conn->close();
 ?>
