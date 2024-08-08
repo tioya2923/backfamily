@@ -39,7 +39,7 @@ if (!empty ($approvalCode)) {
                             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                             $mail->Port = 465;
 
-                            $mail->setFrom('familia16gouveia@gmail.com', 'Família Gouveia');
+                            $mail->setFrom('familia16gouveia@gmail.com', 'FAMILIA GOUVEIA');
                             $mail->addAddress($userEmail);
 
                             $mail->isHTML(true);
