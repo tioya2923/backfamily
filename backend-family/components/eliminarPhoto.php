@@ -21,10 +21,10 @@ $s3 = new S3Client([
 ]);
 
 // Definir o tipo de conteúdo como JSON
-header('Content-Type: application/json');
+//header('Content-Type: application/json');
 
 // Preparar a consulta SQL para evitar injeção de SQL
-$stmt = $conn->prepare("SELECT * FROM fotos");
+$stmt = $conn->prepare("SELECT * FROM fotos ORDER BY data_hora DESC");
 
 // Executar a consulta
 $stmt->execute();

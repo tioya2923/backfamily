@@ -29,6 +29,7 @@ while ($row = $result->fetch_assoc()) {
     $fotos[] = $row;
 }
 
+/*
 if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
     $image = $_FILES['image'];
     $filename = mysqli_real_escape_string($conn, $image['name']);
@@ -60,7 +61,7 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
 } else {
     $fotos[] = ["error" => "Nenhuma fotografia selecionada ou erro no arquivo."];
 }
-
+*/
 echo json_encode($fotos);
 
 $conn->close();
