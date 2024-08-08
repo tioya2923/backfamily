@@ -1,5 +1,4 @@
 <?php
-// Incluir o ficheiro de conexão
 require '../vendor/autoload.php';
 require_once '../connect/server.php';
 require_once '../connect/cors.php';
@@ -11,36 +10,27 @@ $bucketName = 'familia-gouveia';
 $IAM_KEY = getenv('AWS_IAM_KEY');
 $IAM_SECRET = getenv('AWS_IAM_SECRET');
 
-// Configurar cliente S3
-$s3 = S3Client::factory([
+$s3 = new S3Client([
+    'version' => 'latest',
+    'region'  => 'us-east-1',
     'credentials' => [
-        'key' => $IAM_KEY,
+        'key'    => $IAM_KEY,
         'secret' => $IAM_SECRET,
     ],
-    'version' => 'latest',
-    'region'  => 'us-east-1'
 ]);
 
-// Consulta para buscar todas as fotos usando prepared statements
 $stmt = $conn->prepare("SELECT * FROM videos");
 $stmt->execute();
-
 $result = $stmt->get_result();
-$videos = [];
+$videos = array();
 
-// Verifica se a consulta retornou resultados
-if ($result->num_rows > 0) {
-  // Percorre todos os resultados
-  while($row = $result->fetch_assoc()) {
-    // Escapar a saída para segurança
-    array_walk_recursive($row, function(&$item) {
-      $item = htmlspecialchars($item);
-    });
+while ($row = $result->fetch_assoc()) {
+    $row['video'] = $s3->getObjectUrl($bucketName, $row['video']);
     $videos[] = $row;
-  }
-} 
+}
 
-// Retorna os dados como JSON
-header('Content-Type: application/json');
 echo json_encode($videos);
+
+$stmt->close();
+$conn->close();
 ?>
