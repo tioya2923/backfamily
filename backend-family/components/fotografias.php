@@ -29,39 +29,7 @@ while ($row = $result->fetch_assoc()) {
     $fotos[] = $row;
 }
 
-/*
-if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-    $image = $_FILES['image'];
-    $filename = mysqli_real_escape_string($conn, $image['name']);
-    $nome = isset($_POST['nome']) ? mysqli_real_escape_string($conn, $_POST['nome']) : 'Nome padrão';
-    $descricao = isset($_POST['descricao']) ? mysqli_real_escape_string($conn, $_POST['descricao']) : 'Descrição padrão';
-    
-    try {
-        $key = "uploads/{$filename}";
-        $result = $s3->putObject([
-            'Bucket' => $bucketName,
-            'Key'    => $key,
-            'SourceFile' => $image['tmp_name'],
-            'ACL'    => 'public-read',
-            'ContentType' => 'image/png'
-        ]);
 
-        $stmt = $conn->prepare("INSERT INTO fotos (nome, foto, descricao) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $nome, $key, $descricao);
-
-        if ($stmt->execute()) {
-            $fotos[] = ["message" => "Foto enviada com sucesso!"];
-        } else {
-            $fotos[] = ["error" => "Erro ao enviar a foto: " . $stmt->error];
-        }
-        $stmt->close();
-    } catch (S3Exception $e) {
-        $fotos[] = ["error" => "Houve um erro ao fazer upload no S3: " . $e->getMessage()];
-    }
-} else {
-    $fotos[] = ["error" => "Nenhuma fotografia selecionada ou erro no arquivo."];
-}
-*/
 echo json_encode($fotos);
 
 $conn->close();

@@ -1,5 +1,4 @@
 <?php
-// Incluir o ficheiro de conexão
 require '../vendor/autoload.php';
 require_once '../connect/server.php';
 require_once '../connect/cors.php';
@@ -20,9 +19,6 @@ $s3 = new S3Client([
     ],
 ]);
 
-// Definir o tipo de conteúdo como JSON
-//header('Content-Type: application/json');
-
 // Preparar a consulta SQL para evitar injeção de SQL
 $stmt = $conn->prepare("SELECT * FROM fotos ORDER BY data_hora DESC");
 
@@ -36,6 +32,7 @@ $photos = [];
 if ($result->num_rows > 0) {
   // Percorre todos os resultados
   while($row = $result->fetch_assoc()) {
+    $row['foto'] = $s3->getObjectUrl($bucketName, $row['foto']);
     $photos[] = $row;
   }
 }
